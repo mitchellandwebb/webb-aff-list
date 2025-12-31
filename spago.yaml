@@ -4,10 +4,40 @@ package:
     - console
     - effect
     - prelude
+    - profunctor-lenses
+    - monad-loops
+    - debug
+    - aff
+    - record
+    - tuples
+    - webb-test
+    - webb-refer
+    - webb-stateful
+    - webb-mutex
+    - webb-monad
+    - webb-array
+    - webb-map
+    - webb-set
+    - webb-channel
+    - webb-thread
   test:
     main: Test.Main
-    dependencies: []
+    dependencies:
+      - spec-discovery
+      - spec
+      - spec-node
+      - webb-test
 workspace:
   packageSet:
     registry: 69.5.0
-  extraPackages: {}
+  extraPackages:
+    webb-test: 0.0.1
+    webb-refer: 0.0.3
+    webb-stateful: 0.0.2
+    webb-mutex: 0.0.6
+    webb-monad: 0.0.2
+    webb-array: 0.0.1
+    webb-map: 0.0.1
+    webb-set: 0.0.1
+    webb-channel: 0.0.1
+    webb-thread: 0.0.1
