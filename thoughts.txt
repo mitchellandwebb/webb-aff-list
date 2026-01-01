@@ -45,6 +45,4 @@ Each module should provide a set of properties for testing, even if they were wr
 
 Pure Total State with all refs should be specialized to Some State with only some refs, so focus on specific operations can be done. Implementing the effects is thus a recursive practice of specializing on state; hiding which state is actually being changed at the right conceptual levels. Testing then involves a process of _specializing_ each production data/effect to a _specific_ test data type, and the specific test functions that this enables. This needs to be assisted by the unspecialized form's properties and getters and setters.
 
-TODO -- take cannot be implemented by Monad. Because it involves producing another List from a List.
-TODO -- for each Program Node, requesting a value should start the Node if it isn't already started.
 TODO -- should 'launchList' have a different implementation in Yield than in Aff? Probably, right?
