@@ -3,56 +3,51 @@ module Webb.AffList.Internal.Node.State where
 import Prelude
 import Webb.State.Prelude
 
-import Effect.Aff.Class (class MonadAff)
+import Effect.Aff (Aff, Error)
 import Effect.Class (class MonadEffect)
-import Webb.AffList.Data.Node.Parent (class Parent, Parent_)
 import Webb.AffList.Data.Node.Parents (Parents)
 import Webb.AffList.Data.Node.Parents as Parents
-import Webb.AffList.Data.Node.Port (class OutputPort, OutputPort_)
-import Webb.AffList.Data.Node.Port as Port
+import Webb.AffList.Data.Node.Port (PortValue)
+import Webb.AffList.Internal.Deliver (Deliver)
+import Webb.AffList.Internal.Deliver as Deliver
+import Webb.Mutex (Mutex)
+import Webb.Mutex as Mutex
 import Webb.Slot (Slot, newSlot)
 import Webb.Thread (Thread)
 import Webb.Thread as Thread
 
 
-
-
 type NodeState a = 
   { thread :: Thread
   , parents :: ShowRef Parents
-  , port :: Slot (OutputPort_ a) -- We have an output port, from the perspective of the node.
+  , deliver :: Deliver (PortValue a)
+  , node :: Slot LateNode_
+  , mutex :: Mutex
+  , started :: ShowRef Boolean
   }
   
 new :: forall m a. MonadEffect m => m (NodeState a)
 new = do
   thread <- Thread.newThread
+  started <- newShowRef false
+  mutex <- Mutex.newMutex
   parents' <- newShowRef Parents.empty
-  port' <- newSlot "node port"
-  pure { thread, parents: parents', port: port' }
+  deliver' <- Deliver.newDeliver
+  node <- newSlot "node's late bindings"
+  pure { thread, parents: parents', deliver: deliver', node, started, mutex }
   
-setPort :: forall o b m. MonadEffect m => OutputPort o b => NodeState b -> o -> m Unit
-setPort node output = do node.port := Port.wrapOutput output
-
-port :: forall a m. MonadEffect m => NodeState a -> m (OutputPort_ a)
-port state = do 
-  p <- aread state.port
-  pure p
   
-start :: forall a m. MonadAff m => NodeState a -> m Unit
-start state = do Thread.start state.thread
+class LateNode a where
+  closePort :: a -> Aff Unit
+  errorPort :: a -> Error -> Aff Unit
 
-stop :: forall a m. MonadAff m => NodeState a -> m Unit
-stop state = do Thread.stop state.thread
+newtype LateNode_ = LateNode__ (forall r. (forall z. LateNode z => z -> r) -> r)
 
-addParent :: forall a p m. MonadEffect m => Parent p =>
-  NodeState a -> p -> m Unit
-addParent state p = do Parents.addParent p :> state.parents
+wrap :: forall z. LateNode z => z -> LateNode_
+wrap z = LateNode__ (_ $ z)
 
-parents :: forall a m. MonadEffect m =>
-  NodeState a -> m (Array Parent_)
-parents state = do Parents.parents <: state.parents
+instance LateNode (LateNode_) where 
+  closePort (LateNode__ run) = run closePort
+  errorPort (LateNode__ run) = run errorPort
 
-parentCount :: forall a m. MonadEffect m =>
-  NodeState a -> m Int
-parentCount state = do Parents.size <: state.parents
 

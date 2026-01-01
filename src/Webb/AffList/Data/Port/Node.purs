@@ -10,6 +10,8 @@ class Node a where
 
 newtype Node_ = Node__ (forall r. (forall z. Node z => z -> r) -> r)
 
+instance Show (Node_) where show _ = "Node"
+
 wrap :: forall z. Node z => z -> Node_
 wrap z = Node__ (_ $ z)
 

@@ -11,6 +11,8 @@ class Parent a where
 
 newtype Parent_ = Parent__ (forall r. (forall z. Parent z => z -> r) -> r)
 
+instance Show Parent_ where show _ = "Parent"
+
 wrap :: forall z. Parent z => z -> Parent_
 wrap z = Parent__ (_ $ z)
 
