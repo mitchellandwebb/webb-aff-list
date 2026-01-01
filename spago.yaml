@@ -40,7 +40,8 @@ workspace:
     webb-array: 0.0.1
     webb-map: 0.0.1
     webb-set: 0.0.1
-    webb-channel: 0.0.1
+    webb-channel:
+      path: '../webb-channel'
     webb-thread: 0.0.1
     webb-slot:
       path: '../webb-slot'

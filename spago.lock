@@ -776,7 +776,9 @@
     },
     "extra_packages": {
       "webb-array": "0.0.1",
-      "webb-channel": "0.0.1",
+      "webb-channel": {
+        "path": "../webb-channel"
+      },
       "webb-map": "0.0.1",
       "webb-monad": "0.0.2",
       "webb-mutex": "0.0.6",
@@ -1859,9 +1861,8 @@
       ]
     },
     "webb-channel": {
-      "type": "registry",
-      "version": "0.0.1",
-      "integrity": "sha256-EtyUalr5249IuHVj1JZ5HappXOnVpuf6M0j50D1cZKk=",
+      "type": "local",
+      "path": "../webb-channel",
       "dependencies": [
         "aff",
         "effect",

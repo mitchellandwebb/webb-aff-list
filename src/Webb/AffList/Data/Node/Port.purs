@@ -19,7 +19,6 @@ instance OutputPort (OutputPort_ a0) a0 where
   
 
 class InputPort a d | a -> d where
-  start :: a -> Aff Unit -- ensure start of the the input port's source.
   receive :: a -> Aff (PortValue d)
 
 newtype InputPort_ a0 = InputPort__ (forall r. (forall z. InputPort z a0 => z -> r) -> r)
@@ -28,7 +27,6 @@ wrapInput :: forall z a0. InputPort z a0 => z -> InputPort_ a0
 wrapInput z = InputPort__ (_ $ z)
 
 instance InputPort (InputPort_ a0) a0 where 
-  start (InputPort__ run) = run start
   receive (InputPort__ run) = run receive
 
 -- A port can deliver notice of closure, of value, or of error.
