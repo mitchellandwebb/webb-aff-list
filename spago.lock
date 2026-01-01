@@ -21,6 +21,7 @@
             "webb-mutex",
             "webb-refer",
             "webb-set",
+            "webb-slot",
             "webb-stateful",
             "webb-test",
             "webb-thread"
@@ -109,6 +110,7 @@
             "webb-mutex",
             "webb-refer",
             "webb-set",
+            "webb-slot",
             "webb-stateful",
             "webb-test",
             "webb-thread"
@@ -780,6 +782,9 @@
       "webb-mutex": "0.0.6",
       "webb-refer": "0.0.3",
       "webb-set": "0.0.1",
+      "webb-slot": {
+        "path": "../webb-slot"
+      },
       "webb-stateful": "0.0.2",
       "webb-test": "0.0.1",
       "webb-thread": "0.0.1"
@@ -1944,6 +1949,18 @@
       "dependencies": [
         "ordered-collections",
         "prelude"
+      ]
+    },
+    "webb-slot": {
+      "type": "local",
+      "path": "../webb-slot",
+      "dependencies": [
+        "effect",
+        "maybe",
+        "prelude",
+        "refs",
+        "webb-monad",
+        "webb-refer"
       ]
     },
     "webb-stateful": {

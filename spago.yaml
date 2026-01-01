@@ -13,6 +13,7 @@ package:
     - webb-test
     - webb-refer
     - webb-stateful
+    - webb-slot
     - webb-mutex
     - webb-monad
     - webb-array
@@ -41,3 +42,5 @@ workspace:
     webb-set: 0.0.1
     webb-channel: 0.0.1
     webb-thread: 0.0.1
+    webb-slot:
+      path: '../webb-slot'
