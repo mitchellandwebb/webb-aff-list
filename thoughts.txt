@@ -1,3 +1,22 @@
 
 
 
+So I've structured the Yield monad to be very free, without committing to any data types. Just a 'yield' action in the context that can be adapted to any implementation. But to what degree can we do the same for the AffList? To what degree do we _want_ to do the same? Because in order to 'LiftAff', we need an actual implementation, unless we're doing Free monads ... which I don't want to do, since it isn't needed. But if we don't do this ... what _do_ we do? What does any action mean?
+
+My brain ... isn't generating any ideas right now. Does it need to be like Flow, which was extensive and painful to write? Or can it work better? FUCK.
+
+Well, the reason is that the monad has to be based on the operations of something that exists. And right now ... nothing exists. `Yield` was fine because Aff and StateT existed with their own known runtime executions. But we're trying to write AffList ... without any such runtime picture, or representation of a runtime. So we need a representation for it -- and it will have to be concrete, since no other Monad for what we're doing can exist. So what's needed for the AffList?
+
+Well, we're working in a bizarre kind of context. In the general case, we know we have one or more communicating Programs. Each Program is in a Thread, and once the Thread is started, runs in a loop, writing results to a Port, and then repeats the loop; once the loop ends, the Thread code will notify a higher context that the Node is dead, which will notify nearby nodes that the next/previous item is dead. This will propagate -- the purpose is the stream, so nearby threads should _also_ die, since their results will now never be used. A typical Program in a Thread will essentially consist of a loop like 
+
+```
+whileNext prev \item -> do 
+  value <- process item
+  yield value
+```
+
+Is that actually true? Hmmm ... sort-of. We don't actually "take" from any previous item that is in context, but IF a previous item is injected, then we might run such a loop. However, in many cases, only a single value gets emitted, and a decision has to be made about what that single value means in terms of the output. OR an entire AffList is passed to a Program, -- only in that case would we instantiate it and process all its values. So in that case ... what actually _is_ a node, if all it sees in ordinary operation is an output port? Because if that's true, there's no communication with the other ports.
+  So we are a Program -- doing something in a loop, and writing to a Port. When the Program ends, the higher context CLOSES the port, and destroys any Inputs. Multiple inputs can be associated into the program -- regardless of how they are associated, at the end of the loop, we will ask them to clean up whatever they need to clean up as a result of being instantiated in the loop. I think inherently, this makes sense -- once a Program terminates, its parent programs should also be told to do cleanup based on the idea that now, they will _never_ emit to this particular node. If that has meaning, the parent -- whatever it is -- should be told to use that meaning, or to discard it and do nothing for cleanup.
+  Likewise, the Program closes the Port. This has meaning. In most cases, this means that anyone attempting to 'receive' a value from the Program will be told that the Program is closed. And that's an important thing for them to be told. However, it's unclear as of now what the identity of the Port should be -- a concrete type, or an existential type? We can figure that out later, I suppose. In its raw form, however, we've described the Program  node's essentials. 
+
+However, for an AffList to become a ListInst, this isn't enough. We need to support dynamic creation of runtime Program nodes, and we need to support a _constant_ output -- the ListInst itself. How do we represent that? What does the ListInst need to be capable of? How do we cancel all Program nodes? And if a ListInst gets created in an Aff, how do we ensure that being created in the Aff _automatically_ means that cancellation of the Aff will cancel the ListInst as well?
