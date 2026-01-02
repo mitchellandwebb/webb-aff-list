@@ -7,20 +7,18 @@ import Test.Internal.Node.Program as Props
 import Test.Spec (before_)
 import Webb.AffList.Internal.Node.Program as Program
 import Webb.Monad.Prelude (delayInt)
-import Webb.Stateful (localEffect)
 
 
 
 spec :: Spec Unit
 spec = describe "Program internals" do 
-  before_ reset do
+  before_ (pure unit) do
     describe "basic tests" do 
       it "initially state" do 
         p <- new
         isStarted p false
         isOpen p true
         parentsAreActive p true
-        countIs 0
         
       it "starting succeeds" do 
         p <- new
@@ -90,11 +88,5 @@ spec = describe "Program internals" do
   isStarted = Props.isStarted
   isOpen = Props.isOpen
   parentsAreActive = Props.parentsAreActive
-
-  count = localEffect do newShowRef 0
-  reset = do 
-    count := 0
-  countIs n = do 
-    aread count ?= n
     
   
