@@ -19,6 +19,8 @@ spec = describe "Parents data" do
     sizeIs arr' 2
   
   where
+  -- Many modules may define properties. We import them from multiple, and use them
+  -- in the test as if they all came from the same place.
   sizeIs = P.sizeIs
   addParent = P.addParent
   fakeParent = P.fakeParent
