@@ -6,9 +6,12 @@ import Webb.State.Prelude
 import Control.Monad.Error.Class (class MonadError, class MonadThrow)
 import Control.Monad.State (StateT, runStateT)
 import Data.Newtype (class Newtype, wrap)
+import Effect (Effect)
 import Effect.Aff (Aff, Error)
 import Effect.Aff.Class (class MonadAff, liftAff)
-import Effect.Class (class MonadEffect)
+import Effect.Class (class MonadEffect, liftEffect)
+import Webb.AffList.Data.Node.Parent (class Parent, Parent_)
+import Webb.AffList.Data.Node.Parent as Parent
 import Webb.AffList.Internal.Node as Node
 
 
@@ -20,6 +23,7 @@ import Webb.AffList.Internal.Node as Node
 
 type State a =
   { yield :: a -> Aff Unit
+  , addParent :: Parent_ -> Effect Unit
   }
   
 newtype Yield v a = Y (StateT (State v) Aff a)
@@ -37,17 +41,24 @@ derive instance Newtype (Yield v a) _
 
 -- Yield a value to the outer context, and pause until it's time to resume again.
 yield :: forall v. v -> Yield v Unit
-yield v =  wrap do
+yield v = wrap do
   this <- mread
   liftAff do this.yield v
-
+  
+addParent :: forall v p. Parent p => p -> Yield v Unit
+addParent p = wrap do
+  this <- mread
+  liftEffect do this.addParent (Parent.wrap p)
 
 -- Turn the yielding program into a Node, that can be used as part of AffList programs.
 runToNode :: forall m v. MonadEffect m => Yield v Unit -> m (Node.Node v)
 runToNode (Y prog) = do
   node <- Node.newNode
   
-  let state = { yield: \a -> void (Node.send node a) } :: State v
+  let state = 
+        { yield: \a -> void (Node.send node a) 
+        , addParent: \p -> Node.addParent node p
+        } :: State v
       aff = void (runStateT prog state) :: Aff Unit
 
   Node.setProgram node aff

@@ -3,8 +3,11 @@ module Webb.AffList.Internal.ListFiber where
 import Prelude
 
 import Control.Monad.Error.Class (throwError)
+import Control.Monad.Loops (whileJust_)
+import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff, liftAff)
 import Effect.Class (class MonadEffect)
+import Webb.AffList.Data.Node.Parent as Parent
 import Webb.AffList.Data.Node.Port as PV
 import Webb.AffList.Internal.Node as Node
 import Webb.Channel.Data.CMaybe as CMaybe
@@ -24,6 +27,9 @@ newtype ListFiber a = L
 type LFiber = ListFiber
 
 instance Show (ListFiber a) where show _ = "ListFiber"
+
+instance Parent.Parent (ListFiber a) where
+  cancel list = kill list
   
 newListFiber :: forall m a. MonadEffect m => Node.Node a -> m (ListFiber a)
 newListFiber node = do 
@@ -47,3 +53,15 @@ receive (L s) = liftAff do
 -- Receive the value, including if there is an error.
 receive' :: forall m a. MonadAff m => LFiber a -> m (PV.PortValue a)
 receive' (L s) = liftAff do Node.receive s.node
+
+-- Run code for every item in the aff list.
+forEach_ :: forall m a. MonadAff m => LFiber a -> (a -> m Unit) -> m Unit
+forEach_ fiber f = do
+  whileJust_ (_receive) f
+  where
+  _receive :: m (Maybe a) 
+  _receive = do 
+    cmaybe <- receive fiber
+    case cmaybe of 
+      CMaybe.Closed -> pure Nothing
+      CMaybe.Open val -> pure $ Just val

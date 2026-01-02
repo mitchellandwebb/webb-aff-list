@@ -3,7 +3,6 @@ module Webb.AffList.Internal.Node where
 import Prelude
 import Webb.State.Prelude
 
-import Data.Int (octal)
 import Data.Newtype (class Newtype)
 import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)

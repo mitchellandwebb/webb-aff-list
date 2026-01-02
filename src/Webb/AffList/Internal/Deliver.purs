@@ -6,7 +6,7 @@ import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Webb.Channel as Chan
 import Webb.Channel.Data.CMaybe as CMaybe
-import Webb.Monad.Prelude (launch_, notM, (&&=))
+import Webb.Monad.Prelude (notM, (&&=))
 import Webb.Result as Result
 
 {- Represents the general concept of delivery -}
