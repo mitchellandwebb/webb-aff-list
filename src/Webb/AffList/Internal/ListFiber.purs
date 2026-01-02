@@ -1,9 +1,10 @@
 module Webb.AffList.Internal.ListFiber where
 
 import Prelude
+import Webb.State.Prelude
 
 import Control.Monad.Error.Class (throwError)
-import Control.Monad.Loops (whileJust_)
+import Control.Monad.Loops (whileJust_, whileM_)
 import Data.Maybe (Maybe(..))
 import Effect.Aff.Class (class MonadAff, liftAff)
 import Effect.Class (class MonadEffect)
@@ -11,6 +12,8 @@ import Webb.AffList.Data.Node.Parent as Parent
 import Webb.AffList.Data.Node.Port as PV
 import Webb.AffList.Internal.Node as Node
 import Webb.Channel.Data.CMaybe as CMaybe
+import Webb.Monad.Prelude ((&&=))
+import Webb.Stateful (localEffect)
 
 
 
@@ -65,3 +68,19 @@ forEach_ fiber f = do
     case cmaybe of 
       CMaybe.Closed -> pure Nothing
       CMaybe.Open val -> pure $ Just val
+      
+-- While the condition holds and while more items remain, read an item and do something
+-- with it.
+while_ :: forall m a. MonadAff m => LFiber a -> (m Boolean) -> (a -> m Unit) -> m Unit
+while_ fiber cond f = do 
+  whileM_ (cond &&= shouldContinue) do
+    ma <- receive fiber
+    case ma of
+      CMaybe.Closed -> do 
+        continue := false 
+      CMaybe.Open a -> do 
+        f a
+        continue := true
+  where
+  continue = localEffect do newShowRef true
+  shouldContinue = aread continue
