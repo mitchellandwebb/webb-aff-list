@@ -112,4 +112,12 @@ scanl f init mx = runYieldToList do
     flip f x :> acc
     result <- aread acc
     yield result
+    
+filter :: forall a. (a -> Boolean) -> AffList a -> AffList a
+filter f mx = runYieldToList do 
+  xs <- launchList mx
+  LFiber.forEach_ xs \x -> do 
+    when (f x) do yield x
   
+reject :: forall a. (a -> Boolean) -> AffList a -> AffList a
+reject f mx = filter (not <<< f) mx
