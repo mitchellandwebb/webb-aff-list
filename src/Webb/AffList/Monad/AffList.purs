@@ -69,9 +69,7 @@ applyImpl mf mx = runYieldToList do
 pureImpl :: forall a. a -> AffList a
 pureImpl a = runYieldToList do Yield.yield a
 
--- TODO. Bind implementation is not doable in a Yield ... right? Or do
--- we, for each item x, create and instantiate another list (a separate parent), 
--- and go through all its values before finishing
+-- Another kind of 'forEach', except the inner loop is produced at runtime.
 bindImpl :: forall a b. AffList a -> (a -> AffList b) -> AffList b
 bindImpl mx f = runYieldToList do
   xs <- launchList mx
