@@ -79,7 +79,7 @@ stop node = do
   
 
 -------------------- PRIVATE FUNCTIONS ---------------------
--- Not guaranteed to do what you want.
+-- Not guaranteed to do what you want if you get them and try to use the associated APIs.
 ------------------------------------------------------------
 
 -- private accessor
