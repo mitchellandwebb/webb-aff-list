@@ -5,6 +5,7 @@ import Webb.State.Prelude
 
 import Effect.Aff (Aff, Error)
 import Effect.Class (class MonadEffect)
+import Unsafe.Coerce (unsafeCoerce)
 import Webb.AffList.Data.Node.Parents (Parents)
 import Webb.AffList.Data.Node.Parents as Parents
 import Webb.AffList.Data.Node.Port (PortValue)
@@ -40,6 +41,10 @@ new = do
 class LateNode a where
   closePort :: a -> Aff Unit
   errorPort :: a -> Error -> Aff Unit
+
+-- A way to recover the original type unsafely.
+unsafeRecover :: forall a. LateNode_ -> a
+unsafeRecover (LateNode__ f) = f (\z -> unsafeCoerce z :: a)
 
 newtype LateNode_ = LateNode__ (forall r. (forall z. LateNode z => z -> r) -> r)
 
