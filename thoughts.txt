@@ -47,6 +47,4 @@ Pure Total State with all refs should be specialized to Some State with only som
 
 TODO -- should 'launchList' have a different implementation in Yield than in Aff? Probably, right?
 
-TODO -- Need other implementations -- take, drop, foldl, scanl, filter, reject, fromFoldable, group -- that only work within AffList
-
 TODO -- no need for 'parents' more generally? Maybe? But no fibers are explicitly forked, so ... maybe this won't work, actually. How do we get the general idea of supervision to work here? Or do we always need an explicit 'finally' to get things to work? Or can we implicitly 'fork' things? But there's no supervision context overall ... unless we consider that supervision context to be the entire AFF computation itself that we are already running -- something that does NOT return, but only cancels on completion of the Aff ... which hopefully works. `launchList` vs `createList` And yet even launchList isn't clean ... because lifting an Aff does NOT necessarily schedule it to be destroyed properly. It certainly seems like asking for 'finally' supervision is the safest way. Or using a 'withList' -- more likely to guarantee cleanup. But it's hard to 'yield' within the nested Aff, since now it's the wrong monad.

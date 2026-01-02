@@ -8,7 +8,6 @@ import Data.Foldable as Fold
 import Data.Maybe (Maybe(..))
 import Webb.AffList.Internal.ListFiber as LFiber
 import Webb.AffList.Monad.AffList (AffList, launchList, runYieldToList)
-import Webb.AffList.Monad.AffList as AffList
 import Webb.AffList.Monad.Yield (yield)
 import Webb.Array as Array
 import Webb.Stateful (localEffect)
@@ -121,3 +120,19 @@ filter f mx = runYieldToList do
   
 reject :: forall a. (a -> Boolean) -> AffList a -> AffList a
 reject f mx = filter (not <<< f) mx
+
+-- Group the outputs into lists of at most 'n'
+groupN :: forall a. Int -> AffList a -> AffList (Array a)
+groupN n mx = runYieldToList do 
+  xs <- launchList mx
+  LFiber.forEach_ xs \x -> do
+    groupAndYield x
+  where
+  items = localEffect $ newShowRef []
+  groupAndYield x = do 
+    Array.addLast x :> items
+    len <- Array.size <: items
+    when (len >= n) do
+      array <- aread items
+      items := []
+      yield array
