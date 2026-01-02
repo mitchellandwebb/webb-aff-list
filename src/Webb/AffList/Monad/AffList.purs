@@ -25,7 +25,13 @@ import Webb.AffList.Monad.Yield as Yield
 data AffList a = A (Effect (Node.Node a))
 
 instance Functor AffList where
-  map f m = mapImpl f m
+  map = mapImpl
+  
+instance Apply AffList where
+  apply = applyImpl
+  
+instance Applicative AffList where
+  pure = pureImpl
 
 runToListFiber :: forall m a. MonadEffect m => AffList a -> m (LFiber.ListFiber a)
 runToListFiber (A prog) = liftEffect do 
@@ -43,6 +49,20 @@ mapImpl f list = runYieldToList do
   fiber <- launchList list
   LFiber.forEach_ fiber \a -> do 
     Yield.yield (f a)
+  
+-- Goes through all the functions, and then through all values, applying each
+-- function to _all_ of the list. This can be dangerous -- since there are
+-- effects from running the AffList.
+applyImpl :: forall a b. AffList (a -> b) -> AffList a -> AffList b
+applyImpl mf mx = runYieldToList do 
+  fs <- launchList mf
+  LFiber.forEach_ fs \f -> do 
+    xs <- launchList mx
+    LFiber.forEach_ xs \x -> do 
+      Yield.yield (f x)
+      
+pureImpl :: forall a. a -> AffList a
+pureImpl a = runYieldToList do Yield.yield a
     
 class LaunchList m where
   launchList :: forall a. AffList a -> m (LFiber.LFiber a)
@@ -50,5 +70,5 @@ class LaunchList m where
 instance LaunchList (Yield.Yield v) where
   launchList list = do 
     fiber <- runToListFiber list
-    Yield.addParent fiber
+    Yield.addParent fiber -- fiber becomes a parent
     pure fiber
