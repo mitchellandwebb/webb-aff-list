@@ -127,6 +127,7 @@ groupN n mx = runYieldToList do
   xs <- launchList mx
   LFiber.forEach_ xs \x -> do
     groupAndYield x
+  flush
   where
   items = localEffect $ newShowRef []
   groupAndYield x = do 
@@ -136,3 +137,8 @@ groupN n mx = runYieldToList do
       array <- aread items
       items := []
       yield array
+  flush = do 
+    array <- aread items
+    unless (Array.isEmpty array) do 
+      yield array
+      
