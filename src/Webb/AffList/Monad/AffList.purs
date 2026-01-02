@@ -2,8 +2,10 @@ module Webb.AffList.Monad.AffList where
 
 import Prelude
 
+import Control.Monad.Error.Class (class MonadError, class MonadThrow, catchError, throwError)
 import Effect (Effect)
 import Effect.Class (class MonadEffect, liftEffect)
+import Effect.Exception (Error)
 import Webb.AffList.Internal.ListFiber as LFiber
 import Webb.AffList.Internal.Node as Node
 import Webb.AffList.Monad.Yield (Yield)
@@ -43,6 +45,12 @@ instance Bind AffList where
   bind = bindImpl
   
 instance Monad AffList
+
+instance MonadThrow Error AffList where
+  throwError = throwErrorImpl
+
+instance MonadError Error AffList where
+  catchError = catchErrorImpl
 
 runToListFiber :: forall m a. MonadEffect m => AffList a -> m (LFiber.ListFiber a)
 runToListFiber (A prog) = liftEffect do 
@@ -94,6 +102,20 @@ bindImpl mx f = runYieldToList do
     ys <- launchList (f x)
     LFiber.forEach_ ys \y -> do 
       Yield.yield y
+      
+throwErrorImpl :: forall a. Error -> AffList a
+throwErrorImpl err = runYieldToList do throwError err
+
+catchErrorImpl :: forall a. AffList a -> (Error -> AffList a) -> AffList a
+catchErrorImpl mx my = runYieldToList do 
+  xs <- launchList mx
+  catchError (do 
+    LFiber.forEach_ xs Yield.yield 
+  ) (\e -> do 
+    ys <- launchList (my e)
+    LFiber.forEach_ ys Yield.yield
+  )
+
     
 class LaunchList m where
   launchList :: forall a. AffList a -> m (LFiber.LFiber a)
