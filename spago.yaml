@@ -35,7 +35,8 @@ workspace:
     webb-test: 0.0.1
     webb-refer: 0.0.3
     webb-stateful: 0.0.2
-    webb-mutex: 0.0.6
+    webb-mutex:
+      path: '../webb-mutex'
     webb-monad: 0.0.2
     webb-array: 0.0.1
     webb-map: 0.0.1

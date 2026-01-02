@@ -1,14 +1,15 @@
-module Webb.AffList.Class.Yield where
+module Webb.AffList.Monad.Yield where
 
 import Prelude
 import Webb.State.Prelude
 
 import Control.Monad.Error.Class (class MonadError, class MonadThrow)
-import Control.Monad.State (StateT)
+import Control.Monad.State (StateT, runStateT)
 import Data.Newtype (class Newtype, wrap)
 import Effect.Aff (Aff, Error)
 import Effect.Aff.Class (class MonadAff, liftAff)
 import Effect.Class (class MonadEffect)
+import Webb.AffList.Internal.Node as Node
 
 
 {- The Yield monad enables users to 'yield' values to the output, and to 
@@ -39,3 +40,16 @@ yield :: forall v. v -> Yield v Unit
 yield v =  wrap do
   this <- mread
   liftAff do this.yield v
+
+
+-- Turn the yielding program into a Node, that can be used as part of AffList programs.
+runToNode :: forall m v. MonadEffect m => Yield v Unit -> m (Node.Node v)
+runToNode (Y prog) = do
+  node <- Node.newNode
+  
+  let state = { yield: \a -> void (Node.send node a) } :: State v
+      aff = void (runStateT prog state) :: Aff Unit
+
+  Node.setProgram node aff
+  pure node
+  

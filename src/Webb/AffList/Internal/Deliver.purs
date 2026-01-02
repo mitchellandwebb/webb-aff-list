@@ -6,7 +6,8 @@ import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect)
 import Webb.Channel as Chan
 import Webb.Channel.Data.CMaybe as CMaybe
-import Webb.Monad.Prelude (notM, (&&=))
+import Webb.Monad.Prelude (launch_, notM, (&&=))
+import Webb.Result as Result
 
 {- Represents the general concept of delivery -}
 
@@ -38,6 +39,7 @@ send s val = do
 -- them that it is indeed okay to resume.
 receive :: forall m a. MonadAff m => Deliver a -> m (CMaybe.CMaybe a)
 receive s = do 
+  Result.yield -- Ensure 'send' has a chance to wait for a resume.
   void $ Chan.trySend s.resume unit
   Chan.receive s.value
 

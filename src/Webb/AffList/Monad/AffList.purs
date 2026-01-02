@@ -1,4 +1,4 @@
-module Webb.AffList.Class.AffList where
+module Webb.AffList.Monad.AffList where
 
 import Prelude
 
