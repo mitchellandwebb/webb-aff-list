@@ -68,5 +68,6 @@ internalStop state = liftAff do
       node <- aread state.node
       State.closePort node
       Parents.stop state 
+      state.started := false
   
 

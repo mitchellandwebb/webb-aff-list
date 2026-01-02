@@ -47,4 +47,8 @@ Pure Total State with all refs should be specialized to Some State with only som
 
 TODO -- should 'launchList' have a different implementation in Yield than in Aff? Probably, right?
 
-TODO -- Need other implementations -- take, drop, foldl, scanl, filter -- that only work within AffList
+TODO -- Need other implementations -- take, drop, foldl, scanl, filter, reject, fromFoldable, group -- that only work within AffList
+
+TODO -- get rid of useless Port data implementations. "OutputPort" and the like. Check for other useless data.
+
+TODO -- no need for 'parents' more generally? Maybe? But no fibers are explicitly forked, so ... maybe this won't work, actually. How do we get the general idea of supervision to work here?
