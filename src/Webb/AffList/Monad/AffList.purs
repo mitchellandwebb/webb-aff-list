@@ -32,6 +32,11 @@ instance Apply AffList where
   
 instance Applicative AffList where
   pure = pureImpl
+  
+instance Bind AffList where
+  bind = bindImpl
+  
+instance Monad AffList
 
 runToListFiber :: forall m a. MonadEffect m => AffList a -> m (LFiber.ListFiber a)
 runToListFiber (A prog) = liftEffect do 
@@ -63,6 +68,17 @@ applyImpl mf mx = runYieldToList do
       
 pureImpl :: forall a. a -> AffList a
 pureImpl a = runYieldToList do Yield.yield a
+
+-- TODO. Bind implementation is not doable in a Yield ... right? Or do
+-- we, for each item x, create and instantiate another list (a separate parent), 
+-- and go through all its values before finishing
+bindImpl :: forall a b. AffList a -> (a -> AffList b) -> AffList b
+bindImpl mx f = runYieldToList do
+  xs <- launchList mx
+  LFiber.forEach_ xs \x -> do 
+    ys <- launchList (f x)
+    LFiber.forEach_ ys \y -> do 
+      Yield.yield y
     
 class LaunchList m where
   launchList :: forall a. AffList a -> m (LFiber.LFiber a)
