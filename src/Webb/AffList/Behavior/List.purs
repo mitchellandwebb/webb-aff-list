@@ -3,12 +3,14 @@ module Webb.AffList.Behavior.List where
 import Prelude
 import Webb.State.Prelude
 
+import Data.Foldable (class Foldable)
 import Data.Foldable as Fold
 import Data.Maybe (Maybe(..))
 import Webb.AffList.Internal.ListFiber as LFiber
 import Webb.AffList.Monad.AffList (AffList, launchList, runYieldToList)
 import Webb.AffList.Monad.AffList as AffList
 import Webb.AffList.Monad.Yield (yield)
+import Webb.Array as Array
 import Webb.Stateful (localEffect)
 
 
@@ -78,4 +80,36 @@ dropWhile f mx = runYieldToList do
   yieldLast = do 
     mval <- aread last
     Fold.for_ mval yield
+  
+fromFoldable :: forall f a. Foldable f => f a -> AffList a
+fromFoldable ma = runYieldToList do
+  Fold.for_ array yield
+  where
+  array = Array.fromFoldable ma
+  
+-- Fold the values. Should _avoid_ accumulating a collection, since the list might
+-- be infinite.
+foldl :: forall a b. (b -> a -> b) -> b -> AffList a -> AffList b
+foldl f init mx = runYieldToList do 
+  xs <- launchList mx
+  LFiber.forEach_ xs combine
+  yieldAcc
+  where
+  acc = localEffect $ newShowRef init
+  combine x = do flip f x :> acc
+  yieldAcc = do 
+    result <- aread acc
+    yield result
+  
+-- Scan the values, emitting an item for each combination
+scanl :: forall a b. (b -> a -> b) -> b -> AffList a -> AffList b
+scanl f init mx = runYieldToList do 
+  xs <- launchList mx
+  LFiber.forEach_ xs combineAndYield
+  where
+  acc = localEffect $ newShowRef init
+  combineAndYield x = do 
+    flip f x :> acc
+    result <- aread acc
+    yield result
   
