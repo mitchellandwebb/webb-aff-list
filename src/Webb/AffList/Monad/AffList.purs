@@ -4,6 +4,8 @@ import Prelude
 
 import Control.Monad.Error.Class (class MonadError, class MonadThrow, catchError, throwError)
 import Effect (Effect)
+import Effect.Aff (Aff)
+import Effect.Aff.Class (class MonadAff, liftAff)
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Exception (Error)
 import Webb.AffList.Internal.ListFiber as LFiber
@@ -26,31 +28,18 @@ import Webb.AffList.Monad.Yield as Yield
 
 data AffList a = A (Effect (Node.Node a))
 
-instance Semigroup (AffList a) where
-  append = appendImpl
-  
-instance Monoid (AffList a) where
-  mempty = memptyImpl
-
-instance Functor AffList where
-  map = mapImpl
-  
-instance Apply AffList where
-  apply = applyImpl
-  
-instance Applicative AffList where
-  pure = pureImpl
-  
-instance Bind AffList where
-  bind = bindImpl
-  
+instance Semigroup (AffList a) where append = appendImpl
+instance Monoid (AffList a) where mempty = memptyImpl
+instance Functor AffList where map = mapImpl
+instance Apply AffList where apply = applyImpl
+instance Applicative AffList where pure = pureImpl
+instance Bind AffList where bind = bindImpl
 instance Monad AffList
+instance MonadThrow Error AffList where throwError = throwErrorImpl
+instance MonadError Error AffList where catchError = catchErrorImpl
+instance MonadEffect AffList where liftEffect = liftEffectImpl  
+instance MonadAff AffList where liftAff = liftAffImpl
 
-instance MonadThrow Error AffList where
-  throwError = throwErrorImpl
-
-instance MonadError Error AffList where
-  catchError = catchErrorImpl
 
 runToListFiber :: forall m a. MonadEffect m => AffList a -> m (LFiber.ListFiber a)
 runToListFiber (A prog) = liftEffect do 
@@ -115,7 +104,16 @@ catchErrorImpl mx my = runYieldToList do
     ys <- launchList (my e)
     LFiber.forEach_ ys Yield.yield
   )
+  
+liftEffectImpl :: forall a. Effect a -> AffList a
+liftEffectImpl prog = runYieldToList do 
+  a <- liftEffect prog
+  Yield.yield a
 
+liftAffImpl :: forall a. Aff a -> AffList a
+liftAffImpl prog = runYieldToList do 
+  a <- liftAff prog
+  Yield.yield a
     
 class LaunchList m where
   launchList :: forall a. AffList a -> m (LFiber.LFiber a)
