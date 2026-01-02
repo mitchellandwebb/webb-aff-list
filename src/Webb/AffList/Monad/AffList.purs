@@ -123,3 +123,9 @@ instance LaunchList (Yield.Yield v) where
     fiber <- runToListFiber list
     Yield.addParent fiber -- fiber becomes a parent
     pure fiber
+    
+-- For anyone else, we simply return the fiber. It is up to the calling context to
+-- ensure that if an error occurs while the list has not yet been exhausted, that the list
+-- is killed (so that cleanup occurs)
+else instance MonadEffect m => LaunchList m where
+  launchList list = runToListFiber list
