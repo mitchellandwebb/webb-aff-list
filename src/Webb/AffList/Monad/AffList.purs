@@ -114,7 +114,7 @@ liftAffImpl :: forall a. Aff a -> AffList a
 liftAffImpl prog = runYieldToList do 
   a <- liftAff prog
   Yield.yield a
-    
+  
 class LaunchList m where
   launchList :: forall a. AffList a -> m (LFiber.LFiber a)
   
