@@ -40,10 +40,12 @@ receive state = liftAff do
     CMaybe.Open val -> do 
       pure val
       
+-- Deliver an error. Since we erred, there's no recovering, and we don't expect the caller
+-- to cause use to 'resume'.
 error :: forall m a. MonadAff m => Port a -> Error -> m Boolean
 error state e = liftAff do 
   Program.start state
-  Deliver.send state.deliver (PortValue.Err e)
+  Deliver.sendOnly state.deliver (PortValue.Err e)
 
 -- Close the port in both directions. Ensure that no matter who is waiting, they will be
 -- informed of the closure.

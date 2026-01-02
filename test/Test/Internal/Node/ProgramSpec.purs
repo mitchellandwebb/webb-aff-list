@@ -2,11 +2,11 @@ module Test.Internal.Node.ProgramSpec where
 
 import Test.Prelude
 
-import Effect.Aff (never)
+import Effect.Aff (never, throwError)
 import Test.Internal.Node.Program as Props
 import Test.Spec (before_)
 import Webb.AffList.Internal.Node.Program as Program
-import Webb.Monad.Prelude (delayInt)
+import Webb.Monad.Prelude (delayInt, throwString)
 
 
 
@@ -47,6 +47,16 @@ spec = describe "Program internals" do
     describe "tests with a program" do 
       it "starting will trigger internal stop on its own" do 
         p <- new' do pure unit
+        start p
+        isStarted p true
+
+        delayInt 10
+        isStarted p false
+        isOpen p false
+        parentsAreActive p false
+        
+      it "error will trigger internal stop on its own" do
+        p <- new' do throwString "oh no, error"
         start p
         isStarted p true
 

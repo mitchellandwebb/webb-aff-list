@@ -23,6 +23,11 @@ newDeliver = do
   value <- Chan.newChan $ Chan.finite 0
   resume <- Chan.newChan $ Chan.finite 0
   pure $ { value, resume }
+
+-- Only sends. Does not pause and wait for resumption -- the machine is probably
+-- broken.
+sendOnly :: forall m a. MonadAff m => Deliver a -> a -> m Boolean
+sendOnly s val = do Chan.send s.value val
   
 -- Send a value. Return whether we succeeded, and whether we received a response.
 -- If we failed or did not receive a response, the ability to deliver has died.
