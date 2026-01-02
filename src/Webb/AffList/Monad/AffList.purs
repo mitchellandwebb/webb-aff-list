@@ -24,6 +24,12 @@ import Webb.AffList.Monad.Yield as Yield
 
 data AffList a = A (Effect (Node.Node a))
 
+instance Semigroup (AffList a) where
+  append = appendImpl
+  
+instance Monoid (AffList a) where
+  mempty = memptyImpl
+
 instance Functor AffList where
   map = mapImpl
   
@@ -46,6 +52,17 @@ runToListFiber (A prog) = liftEffect do
 runYieldToList :: forall a. Yield a Unit -> AffList a
 runYieldToList prog = A do
   Yield.runToNode prog
+  
+appendImpl :: forall a. AffList a -> AffList a -> AffList a
+appendImpl mx my = runYieldToList do
+  xs <- launchList mx
+  LFiber.forEach_ xs Yield.yield
+  ys <- launchList my
+  LFiber.forEach_ ys Yield.yield
+  
+-- An empty aff list -- when told to receive, will close instead.
+memptyImpl :: forall a. AffList a
+memptyImpl = runYieldToList do pure unit
 
 -- Implement the map. Instantiate the list, take all of the values, and 
 -- emit them in map form.
