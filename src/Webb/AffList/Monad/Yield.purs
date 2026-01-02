@@ -4,15 +4,17 @@ import Prelude
 import Webb.State.Prelude
 
 import Control.Monad.Error.Class (class MonadError, class MonadThrow)
-import Control.Monad.State (StateT, runStateT)
+import Control.Monad.State (StateT, evalStateT, runStateT)
 import Data.Newtype (class Newtype, wrap)
 import Effect (Effect)
 import Effect.Aff (Aff, Error)
+import Effect.Aff as Aff
 import Effect.Aff.Class (class MonadAff, liftAff)
 import Effect.Class (class MonadEffect, liftEffect)
 import Webb.AffList.Data.Node.Parent (class Parent, Parent_)
 import Webb.AffList.Data.Node.Parent as Parent
 import Webb.AffList.Internal.Node as Node
+import Webb.Monad.Prelude as Monad
 
 
 {- The Yield monad enables users to 'yield' values to the output, and to 
@@ -64,3 +66,20 @@ runToNode (Y prog) = do
   Node.setProgram node aff
   pure node
   
+asAff :: forall v a. Yield v a -> Yield v (Aff a)
+asAff (Y prog) = wrap do 
+  state <- mread
+  let aff = evalStateT prog state
+  pure aff
+  
+finally :: forall v a. Yield v Unit -> Yield v a -> Yield v a
+finally final prog = do 
+  final' <- asAff final
+  prog' <- asAff prog
+  liftAff do Aff.finally final' prog'
+
+onCancel :: forall v a. Yield v Unit -> Yield v a -> Yield v a
+onCancel final prog = do 
+  final' <- asAff final
+  prog' <- asAff prog
+  liftAff do Monad.onCancel final' prog'
