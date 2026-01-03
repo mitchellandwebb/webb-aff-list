@@ -12,7 +12,7 @@ package:
     - transformers: ">=6.1.0 <7.0.0"
     - unsafe-coerce: ">=6.0.0 <7.0.0"
     - webb-array: ">=0.0.1 <0.0.2"
-    - webb-channel: ">=0.0.2 <0.0.3"
+    - webb-channel: ">=0.0.3 <0.0.4"
     - webb-monad: ">=0.0.2 <0.0.3"
     - webb-mutex: ">=0.0.7 <0.0.8"
     - webb-refer: ">=0.0.3 <0.0.4"
@@ -45,6 +45,6 @@ workspace:
     webb-array: 0.0.1
     webb-map: 0.0.1
     webb-set: 0.0.1
-    webb-channel: 0.0.2
+    webb-channel: 0.0.3
     webb-thread: 0.0.2
     webb-slot: 0.0.1
