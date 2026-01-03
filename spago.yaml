@@ -39,7 +39,7 @@ workspace:
   extraPackages:
     webb-test: 0.0.1
     webb-refer: 0.0.3
-    webb-stateful: 0.0.2
+    webb-stateful: 0.0.3
     webb-mutex: 0.0.7
     webb-monad: 0.0.2
     webb-array: 0.0.1
