@@ -14,7 +14,7 @@ import Webb.Stateful (localEffect)
 
 
 {- Add common list-like behaviors for the AffList. -}
-
+type LBehavior = Unit
 
 -- Take only a few values before stopping.
 take :: forall a. Int -> AffList a -> AffList a
