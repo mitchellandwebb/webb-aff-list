@@ -48,13 +48,13 @@
               "webb-mutex": ">=0.0.7 <0.0.8"
             },
             {
-              "webb-refer": ">=0.0.1 <0.0.4"
+              "webb-refer": ">=0.0.3 <0.0.4"
             },
             {
               "webb-slot": ">=0.0.1 <0.0.2"
             },
             {
-              "webb-stateful": ">=0.0.2 <0.0.3"
+              "webb-stateful": ">=0.0.3 <0.1.0"
             },
             {
               "webb-thread": ">=0.0.2 <0.0.3"
@@ -785,7 +785,7 @@
       "webb-refer": "0.0.3",
       "webb-set": "0.0.1",
       "webb-slot": "0.0.1",
-      "webb-stateful": "0.0.2",
+      "webb-stateful": "0.0.3",
       "webb-test": "0.0.1",
       "webb-thread": "0.0.2"
     }
@@ -1945,8 +1945,8 @@
     },
     "webb-stateful": {
       "type": "registry",
-      "version": "0.0.2",
-      "integrity": "sha256-ToT98nCMrrs/CB2QUn945UTw5xly6ladqi5ObYN9he0=",
+      "version": "0.0.3",
+      "integrity": "sha256-VtYu41bNjO1H78jCCnaak8LUsj4LvMox49FPI5dSrV0=",
       "dependencies": [
         "arrays",
         "effect",
