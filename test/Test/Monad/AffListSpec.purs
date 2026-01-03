@@ -22,7 +22,7 @@ spec = describe "Aff list monad" do
     listEmits prog [1, 2, 3, 4]
     
   it "empty" do 
-    let prog = mempty
+    let prog = mempty :: _ Int
     listEmits prog []
 
   it "mapping" do 

@@ -11,7 +11,7 @@ import Webb.Stateful (localEffect)
 
 type AffListProps = Unit
 
-listEmits :: AffList Int -> Array Int -> Aff Unit
+listEmits :: forall a. Eq a => Show a => AffList a -> Array a -> Aff Unit
 listEmits list ints = do 
   fiber <- AffList.launchList list
   LFiber.forEach_ fiber take
